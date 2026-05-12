@@ -199,12 +199,18 @@ export async function runPLSSEM(
     list(
       path_coefficients = matrix_to_list(summ$paths),
       r_squared = as.list(summ$reliability[, "R.squared"]),
+      adj_r_squared = as.list(summ$reliability[, "Adj.R.squared"]),
       f_squared = matrix_to_list(summ$fSquare),
+      vif_inner = if(!is.null(summ$vif_inner)) matrix_to_list(summ$vif_inner) else list(),
       loadings = matrix_to_list(summ$loadings),
       total_effects = matrix_to_list(summ$total_effects),
       cross_loadings = matrix_to_list(summ$loadings),
       fornell_larcker = matrix_to_list(fornell_larcker),
       htmt = matrix_to_list(htmt_res),
+      fit_indices = list(
+        srmr = if("SRMR" %in% names(summ$it_criteria)) as.numeric(summ$it_criteria["SRMR",]) else 0,
+        nfi = if("NFI" %in% names(summ$it_criteria)) as.numeric(summ$it_criteria["NFI",]) else 0
+      ),
       validity = list(
         cronbach = as.list(summ$reliability[, "Alpha"]),
         rho_a = as.list(summ$reliability[, "rhoA"]),
@@ -352,6 +358,7 @@ export async function runBootstrapping(
       list(
         boot_paths = matrix_to_list(summ_boot$bootstrapped_paths),
         boot_loadings = matrix_to_list(summ_boot$bootstrapped_loadings),
+        path_p_values = if(!is.null(summ_boot$bootstrapped_paths)) as.list(summ_boot$bootstrapped_paths[, "P Value"]) else list(),
         n_bootstrap = ${nBootstrap}
       )
     `;

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Descriptive Statistics & Validation - Template-Driven
  */
 import { WEBR_TIMEOUTS, getTimeoutForMethod } from '../constants';
@@ -73,4 +73,74 @@ export async function runDescriptiveStats(data: number[][]): Promise<{
         rCode
     };
 }
+/**
+ * Run frequency analysis for categorical data (Demographics)
+ */
+export async function runFrequencyAnalysis(data: number[][], columns?: string[]): Promise<{
+    frequencies: {
+        column: string;
+        categories: {
+            value: string | number;
+            count: number;
+            percentage: number;
+        }[];
+    }[];
+    rCode: string;
+}> {
+    await loadPackagesForMethod('descriptive');
+    const rCode = `
+    df <- as.data.frame(raw_data)
+    if(!is.null(c({{columns}}))) {
+        colnames(df) <- c({{columns}})
+    } else {
+        colnames(df) <- paste0("V", 1:ncol(df))
+    }
+    
+    results <- lapply(colnames(df), function(col) {
+        tbl <- table(df[[col]], useNA = "no")
+        pct <- prop.table(tbl) * 100
+        
+        list(
+            column = col,
+            categories = lapply(seq_along(tbl), function(i) {
+                list(
+                    value = names(tbl)[i],
+                    count = as.numeric(tbl[i]),
+                    percentage = as.numeric(pct[i])
+                )
+            })
+        )
+    })
+    results
+    `;
 
+    const colNames = columns ? columns.map(c => `"${c}"`).join(',') : 'NULL';
+    const finalRCode = rCode.replace(/\{\{columns\}\}/g, colNames);
+    
+    const result = await executeRWithRecovery(finalRCode, 'descriptive', 0, 2, WEBR_TIMEOUTS.BASIC, data);
+    const getValue = parseWebRResult(result);
+    
+    // Parse the list of lists from WebR
+    const frequencies: any[] = [];
+    const nCols = data[0].length;
+    
+    for (let i = 0; i < nCols; i++) {
+        const colData = parseWebRResult(getValue(i));
+        const categoriesRaw = colData('categories') || [];
+        const categories = categoriesRaw.map((cat: any) => {
+            const catData = parseWebRResult(cat);
+            return {
+                value: catData('value')?.[0] ?? 'Unknown',
+                count: catData('count')?.[0] ?? 0,
+                percentage: catData('percentage')?.[0] ?? 0
+            };
+        });
+        
+        frequencies.push({
+            column: colData('column')?.[0] || `Variable ${i+1}`,
+            categories
+        });
+    }
+
+    return { frequencies, rCode: finalRCode };
+}
