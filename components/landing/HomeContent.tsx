@@ -40,13 +40,13 @@ export default function HomeContent() {
                     
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link
-                            href="/TinPhanTich"
+                            href="/r"
                             className="w-full sm:w-auto px-10 py-4 bg-slate-900 text-white rounded font-bold uppercase tracking-widest text-xs hover:bg-black transition-all flex items-center justify-center gap-2"
                         >
                             Bắt đầu phân tích ngay <ArrowRight className="w-4 h-4" />
                         </Link>
                         <Link
-                            href="/TinPhanTich"
+                            href="/r"
                             className="w-full sm:w-auto px-10 py-4 bg-white border border-slate-200 text-slate-600 rounded font-bold uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
                         >
                             Xem Quy trình Nghiên cứu

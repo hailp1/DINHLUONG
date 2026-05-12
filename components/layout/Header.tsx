@@ -39,8 +39,8 @@ function HeaderContent({ hideNav = false }: HeaderProps) {
                             <Home className="w-4 h-4" /> Trang chủ
                         </Link>
                         <Link 
-                            href="/TinPhanTich" 
-                            className={`text-sm font-bold flex items-center gap-2 ${pathname === '/TinPhanTich' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
+                            href="/r" 
+                            className={`text-sm font-bold flex items-center gap-2 ${pathname === '/r' ? 'text-indigo-600' : 'text-slate-500 hover:text-slate-900'}`}
                         >
                             <BarChart3 className="w-4 h-4" /> Hệ thống Phân tích
                         </Link>
@@ -77,7 +77,7 @@ function HeaderContent({ hideNav = false }: HeaderProps) {
             {isMobileMenuOpen && (
                 <div className="md:hidden border-t border-slate-100 bg-white p-6 space-y-4 shadow-xl">
                     <Link href="/" className="block text-sm font-bold text-slate-700" onClick={() => setIsMobileMenuOpen(false)}>Trang chủ</Link>
-                    <Link href="/TinPhanTich" className="block text-sm font-bold text-slate-700" onClick={() => setIsMobileMenuOpen(false)}>Hệ thống Phân tích</Link>
+                    <Link href="/r" className="block text-sm font-bold text-slate-700" onClick={() => setIsMobileMenuOpen(false)}>Hệ thống Phân tích</Link>
                 </div>
             )}
         </header>
