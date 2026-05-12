@@ -173,6 +173,7 @@ const nextConfig = {
     // Production optimizations
     productionBrowserSourceMaps: false,
     poweredByHeader: false,
+    output: 'standalone',
 };
 
 export default nextConfig;
