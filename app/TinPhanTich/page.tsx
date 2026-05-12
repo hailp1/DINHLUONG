@@ -56,7 +56,6 @@ function TinPhanTichContent() {
 
     useEffect(() => {
         setLocale(getStoredLocale());
-        initWebR().catch(console.error);
     }, []);
 
     const handleDataLoaded = (loadedData: any[], fname: string) => {

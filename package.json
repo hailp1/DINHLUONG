@@ -18,7 +18,6 @@
     "fresh": "npm run clean:all && npm install",
     "check-env": "node scripts/check-env.js",
     "fix-auth": "node scripts/fix-supabase-config.js",
-    "postinstall": "node scripts/copy-webr.js",
     "prepare": "node -e \"try { require('fs').mkdirSync('.husky') } catch (e) {}\""
   },
   "dependencies": {
@@ -49,7 +48,6 @@
     "react-markdown": "^10.1.0",
     "simple-statistics": "^7.8.8",
     "uuid": "^13.0.0",
-    "webr": "0.5.8",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

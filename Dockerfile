@@ -12,9 +12,6 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Run postinstall to ensure WebR files are in public
-RUN npm run postinstall
-
 # Build the Next.js application
 # Disable telemetry during build
 ENV NEXT_TELEMETRY_DISABLED 1
