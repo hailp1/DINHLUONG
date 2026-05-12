@@ -4,7 +4,18 @@ services:
     container_name: ncsstat-app
     ports:
       - "3000:3000"
+    depends_on:
+      - r-api
     restart: always
     environment:
+      - R_API_URL=http://r-api:8000
       - NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL}
       - NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+
+  r-api:
+    build:
+      context: ./r-backend
+    container_name: ncsstat-r-api
+    ports:
+      - "8000:8000"
+    restart: always
