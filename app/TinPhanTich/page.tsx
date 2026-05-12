@@ -239,7 +239,14 @@ function TinPhanTichContent() {
                                             {numericColumns.map((col, i) => (
                                                 <tr key={i} className="border-b border-slate-50">
                                                     <td className="py-2 font-medium">{col}</td>
-                                                    {efaResults.loadings[i].map((l: number, j: number) => (<td key={j} className={`text-right py-2 ${Math.abs(l) > 0.5 ? 'font-bold text-indigo-600' : 'text-slate-400'}`}>{l.toFixed(3)}</td>))}
+                                                    {efaResults.loadings[i].map((l: any, j: number) => {
+                                                        const val = typeof l === 'number' ? l : parseFloat(l) || 0;
+                                                        return (
+                                                            <td key={j} className={`text-right py-2 ${Math.abs(val) > 0.5 ? 'font-bold text-indigo-600' : 'text-slate-400'}`}>
+                                                                {val.toFixed(3)}
+                                                            </td>
+                                                        );
+                                                    })}
                                                 </tr>
                                             ))}
                                         </tbody>
@@ -317,11 +324,12 @@ function NavButton({ active, onClick, icon: Icon, label, disabled = false }: { a
     );
 }
 
-function SmallMetric({ label, value }: { label: string, value: number }) {
+function SmallMetric({ label, value }: { label: string, value: any }) {
+    const val = typeof value === 'number' ? value : parseFloat(value) || 0;
     return (
         <div className="bg-white border border-slate-200 p-4 rounded shadow-sm">
             <p className="text-[8px] font-black uppercase text-slate-400 mb-1">{label}</p>
-            <p className="text-lg font-black font-mono">{value.toFixed(3)}</p>
+            <p className="text-lg font-black font-mono">{val.toFixed(3)}</p>
         </div>
     );
 }
