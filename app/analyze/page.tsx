@@ -115,35 +115,10 @@ function AnalyzeContent() {
         }
     }, [userProfile?.tokens]);
 
-    // Auth guard: Wait for AuthContext to finish loading
+    // Auth guard disabled - allowing free access
     useEffect(() => {
-        // [DEV ONLY] Bypass login to allow local testing
-        if (process.env.NODE_ENV === 'development') {
-            console.log('[Analyze] [DEV MODE] Bypassing auth requirement for local testing.');
-            setLoading(false);
-            return;
-        }
-
-        const hasCode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('code');
-        
-        if (hasCode) {
-            console.log('[Analyze] URL has code, holding redirect guard.');
-            // If URL has code, AuthContext MUST be loading or exchanging. We stay here.
-            return;
-        }
-
-        if (!authLoading) {
-            const isSupabaseConfigured = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-            
-            if (user || !isSupabaseConfigured || (process.env.NODE_ENV as string) === 'development') {
-                console.log('[Analyze] Allowing access (User present, Local Mode, or Guest Mode).');
-                setLoading(false);
-            } else {
-                console.log('[Analyze] No user and no code, redirecting to login');
-                router.push('/login?next=/analyze');
-            }
-        }
-    }, [authLoading, user, router]);
+        setLoading(false);
+    }, []);
 
     // Session State Management
     const {
@@ -512,6 +487,8 @@ function AnalyzeContent() {
             // --- NCS Credit: Check balance first, then deduct BEFORE running analysis ---
             // This prevents the race condition where analysis succeeds but deduction fails.
             // If analysis fails after deduction, we attempt a refund via a compensating credit.
+            // --- NCS Credit: System Disabled for Free Access ---
+            /*
             if (user) {
                 analysisCost = await getAnalysisCost(type);
                 const { hasEnough } = await checkBalance(user.id, analysisCost);
@@ -535,6 +512,7 @@ function AnalyzeContent() {
                     if (!isExempt) setNcsBalance(newBalance);
                 }
             }
+            */
 
             setAnalysisProgress(0);
 

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { createContext, useContext, useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { getSupabase } from '@/utils/supabase/client';
@@ -40,124 +40,36 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [profile, setProfile] = useState<Profile | null>(null);
-    const [loading, setLoading] = useState(true);
-    const lastUserRef = useRef<string | null>(null);
-    const isFirstRun = useRef(true);
-    const isExchangingCode = useRef(false);
-    const supabase = getSupabase();
+    // Auth system disabled - providing guest session
+    const [user, setUser] = useState<User | null>({ id: 'guest-user', email: 'guest@ncsstat.org' } as any);
+    const [profile, setProfile] = useState<Profile | null>({
+        id: 'guest-user',
+        full_name: 'Khách (Guest)',
+        email: 'guest@ncsstat.org',
+        role: 'user',
+        tokens: 999999, // Unlimited tokens for free access
+        avatar_url: null
+    } as any);
+    const [loading, setLoading] = useState(false);
 
-    const fetchProfile = useCallback(async (userId: string) => {
-        try {
-            const { data } = await supabase
-                .from('profiles')
-                .select('id, full_name, avatar_url, role, tokens, total_earned, total_spent, organization, academic_level, research_field, orcid_id, last_active')
-                .eq('id', userId)
-                .single();
-            if (data) setProfile(data as Profile);
-        } catch (err) {
-            logger.error('[Auth] Profile fetch fail', err);
-        }
-    }, [supabase]);
-
-    const handleUser = useCallback((sessionUser: User | null) => {
-        const userId = sessionUser?.id || null;
-        if (userId !== lastUserRef.current) {
-            lastUserRef.current = userId;
-            setUser(sessionUser || null);
-            if (userId) {
-                fetchProfile(userId);
-            } else {
-                setProfile(null);
-            }
-        }
-    }, [fetchProfile]);
-
-    useEffect(() => {
-        if (!isFirstRun.current) return;
-        isFirstRun.current = false;
-
-        // SYNCHRONOUS: Detect code BEFORE registering listener (listener fires immediately!)
-        const urlCode = typeof window !== 'undefined'
-            ? new URLSearchParams(window.location.search).get('code')
-            : null;
-        
-        if (urlCode) {
-            isExchangingCode.current = true;
-        }
-
-        const initSession = async () => {
-            try {
-                logger.debug('[Auth] Initiating session restoration...');
-                const { data: { session } } = await supabase.auth.getSession();
-                
-                if (session?.user) {
-                    logger.debug('[Auth] Session successfully recovered for:', session.user.email);
-                    handleUser(session.user);
-                    setLoading(false);
-                } else {
-                    const params = new URLSearchParams(window.location.search);
-                    const code = params.get('code');
-                    
-                    if (code && !isExchangingCode.current) {
-                        isExchangingCode.current = true;
-                        logger.debug('[Auth] OAuth code found, exchanging...');
-                        try {
-                            const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-                            if (!exchangeError && exchangeData.session?.user) {
-                                logger.debug('[Auth] Exchange successful!');
-                                handleUser(exchangeData.session.user);
-                                window.history.replaceState({}, '', window.location.pathname);
-                            } else {
-                                logger.error('[Auth] Exchange failed:', exchangeError);
-                            }
-                        } catch (e) {
-                            logger.error('[Auth] Exchange exception:', e);
-                        }
-                        isExchangingCode.current = false;
-                        setLoading(false);
-                    } else {
-                        // Truly no session and no code
-                        logger.debug('[Auth] No session and no code to exchange.');
-                        setLoading(false);
-                    }
-                }
-            } catch (err) {
-                logger.error('[Auth] Critical auth init failure:', err);
-                setLoading(false);
-            }
-        };
-        
-        initSession();
-
-        // Auth state listener â€” NEVER touch loading while code exchange is in progress
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
-            if (isExchangingCode.current) {
-                return; // Code exchange owns the loading state
-            }
-            handleUser(session?.user || null);
-            setLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
-    }, [supabase, handleUser]);
+    const refreshProfile = useCallback(async () => {
+        // No-op in guest mode
+    }, []);
 
     const signOut = useCallback(async () => {
-        await supabase.auth.signOut();
-        clearORCIDUser();
-        window.location.href = '/login';
-    }, [supabase]);
+        // In guest mode, sign out just clears nothing or redirects to home
+        window.location.href = '/';
+    }, []);
 
     const value = useMemo(() => ({
         user,
         profile,
         loading,
-        isAdmin: profile?.role === 'admin',
-        isOrcidUser: !!profile?.orcid_id || !!getORCIDUser(),
-        refreshProfile: async () => { if (user) await fetchProfile(user.id); },
+        isAdmin: true, // Allow admin features in free mode if needed
+        isOrcidUser: false,
+        refreshProfile,
         signOut,
-    }), [user, profile, loading, signOut, fetchProfile]);
+    }), [user, profile, loading, signOut, refreshProfile]);
 
     return (
         <AuthContext.Provider value={value}>

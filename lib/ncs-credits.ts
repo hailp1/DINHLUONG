@@ -98,46 +98,18 @@ export async function getDefaultBalance(): Promise<number> {
 }
 
 /**
- * Check if user has enough credits for an analysis
- */
-export async function checkBalance(userId: string, cost: number): Promise<{
+ * Check if user has enough creexport async function checkBalance(userId: string, cost: number): Promise<{
     hasEnough: boolean;
     currentBalance: number;
     required: number;
     isExempt?: boolean;
 }> {
-    const supabase = getSupabase();
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('tokens, role')
-        .eq('id', userId)
-        .single() as any;
-
-    if (error || !profile) {
-        console.error('Error checking balance:', error);
-        return { hasEnough: false, currentBalance: 0, required: cost };
-    }
-
-    // Check if role is exempt (admin roles)
-    // Mapping roles level >= 7: institution_admin, platform_admin, super_admin
-    const exemptRoles = ['institution_admin', 'platform_admin', 'super_admin'];
-    const isExempt = exemptRoles.includes(profile.role) || profile.role === 'admin';
-
-    if (isExempt) {
-        return { 
-            hasEnough: true, 
-            currentBalance: profile.tokens || 0, 
-            required: cost,
-            isExempt: true 
-        };
-    }
-
-    const currentBalance = profile.tokens || 0;
+    // Credit check disabled - everyone has enough
     return {
-        hasEnough: currentBalance >= cost,
-        currentBalance,
+        hasEnough: true,
+        currentBalance: 999999,
         required: cost,
-        isExempt: false
+        isExempt: true
     };
 }
 
@@ -151,132 +123,29 @@ export async function deductCredits(
     reason: string,
     analysisType?: string
 ): Promise<{ success: boolean; newBalance: number; error?: string; isExempt?: boolean }> {
-    const supabase = getSupabase();
-
-    // First check current balance and role
-    const { data: profile, error: fetchError } = await supabase
-        .from('profiles')
-        .select('tokens, total_spent, role')
-        .eq('id', userId)
-        .single() as any;
-
-    if (fetchError || !profile) {
-        return { success: false, newBalance: 0, error: 'KhÃ´ng thá»ƒ láº¥y thÃ´ng tin tÃ i khoáº£n' };
-    }
-
-    // Admin Bypass Logic: level >= 7 (platform_admin=8, super_admin=9, institution_admin=7)
-    const exemptRoles = ['institution_admin', 'platform_admin', 'super_admin', 'admin'];
-    const isExempt = exemptRoles.includes(profile.role);
-
-    if (isExempt) {
-        // Log the transaction as zero cost for admin
-        supabase.from('token_transactions').insert({
-            user_id: userId,
-            amount: 0,
-            type: 'spend_analysis',
-            description: `[Admin Bypass] ${reason}`,
-            balance_after: profile.tokens || 0
-        }).then(({ error }: { error: unknown }) => {
-            if (error) console.warn('Failed to log admin transaction:', error);
-        });
-
-        return { success: true, newBalance: profile.tokens || 0, isExempt: true };
-    }
-
-    const currentBalance = profile.tokens || 0;
-    if (currentBalance < amount) {
-        return {
-            success: false,
-            newBalance: currentBalance,
-            error: `KhÃ´ng Ä‘á»§ NCS. Cáº§n ${amount.toLocaleString()}, hiá»‡n cÃ³ ${currentBalance.toLocaleString()}`
-        };
-    }
-
-    const newBalance = currentBalance - amount;
-    const newTotalSpent = (profile.total_spent || 0) + amount;
-
-    // Update balance
-    const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-            tokens: newBalance,
-            total_spent: newTotalSpent,
-            updated_at: new Date().toISOString()
-        })
-        .eq('id', userId);
-
-    if (updateError) {
-        console.error('Error deducting credits:', updateError);
-        return { success: false, newBalance: currentBalance, error: 'Lá»—i trá»« Ä‘iá»ƒm' };
-    }
-
-    // Log the transaction (non-blocking)
-    supabase.from('token_transactions').insert({
-        user_id: userId,
-        amount: -amount,
-        type: 'spend_analysis',
-        description: reason,
-        balance_after: newBalance
-    }).then(({ error }: { error: unknown }) => {
-        if (error) console.warn('Failed to log transaction silently:', error);
-    });
-
-    return { success: true, newBalance, isExempt: false };
+    // Credit deduction disabled - always successful
+    return { success: true, newBalance: 999999, isExempt: true };
 }
 
 /**
  * Get user's current NCS balance
  */
 export async function getUserBalance(userId: string): Promise<number> {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-        .from('profiles')
-        .select('tokens')
-        .eq('id', userId)
-        .single() as any;
-
-    if (error || !data) {
-        return 0;
-    }
-
-    return data.tokens || 0;
+    return 999999;
 }
 
 /**
  * Update analysis costs (admin only)
  */
 export async function updateAnalysisCosts(costs: Record<string, number>): Promise<boolean> {
-    const supabase = getSupabase();
-    const { error } = await supabase
-        .from('system_config')
-        .upsert({
-            key: 'analysis_costs',
-            value: costs,
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'key' });
-
-    if (!error) {
-        // Clear cache
-        costCache = null;
-    }
-
-    return !error;
+    return true;
 }
 
 /**
  * Update default balance (admin only)
  */
 export async function updateDefaultBalance(balance: number): Promise<boolean> {
-    const supabase = getSupabase();
-    const { error } = await supabase
-        .from('system_config')
-        .upsert({
-            key: 'default_ncs_balance',
-            value: balance,
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'key' });
-
-    return !error;
+    return true;
 }
 
 /**
@@ -284,24 +153,24 @@ export async function updateDefaultBalance(balance: number): Promise<boolean> {
  */
 function getDefaultCosts(): Record<string, number> {
     return {
-        descriptive: 100,
-        cronbach: 500,
-        omega: 500, // Same as cronbach
-        correlation: 300,
-        ttest: 400,
-        'ttest-indep': 400,
-        'ttest-paired': 400,
-        anova: 600,
-        efa: 1000,
-        cfa: 2000,
-        sem: 3000,
-        regression: 800,
-        chisquare: 400,
-        'mann-whitney': 400,
-        'kruskal-wallis': 600,
-        'wilcoxon': 400,
-        ai_explain: 1500,
-        export_pdf: 200
+        descriptive: 0,
+        cronbach: 0,
+        omega: 0,
+        correlation: 0,
+        ttest: 0,
+        'ttest-indep': 0,
+        'ttest-paired': 0,
+        anova: 0,
+        efa: 0,
+        cfa: 0,
+        sem: 0,
+        regression: 0,
+        chisquare: 0,
+        'mann-whitney': 0,
+        'kruskal-wallis': 0,
+        'wilcoxon': 0,
+        ai_explain: 0,
+        export_pdf: 0
     };
 }
 
@@ -316,139 +185,24 @@ export function clearCostCache(): void {
  * Get referral reward amount from database
  */
 export async function getReferralReward(): Promise<number> {
-    const supabase = getSupabase();
-    const { data, error } = await supabase
-        .from('system_config')
-        .select('value')
-        .eq('key', 'referral_reward')
-        .maybeSingle() as any;
-
-    if (error || !data) {
-        console.warn('Failed to fetch referral reward, using 5000');
-        return 5000;
-    }
-
-    return typeof data.value === 'number'
-        ? data.value
-        : parseInt(data.value as string) || 5000;
+    return 0;
 }
 
 /**
  * Update referral reward amount (admin only)
  */
 export async function updateReferralReward(amount: number): Promise<boolean> {
-    const supabase = getSupabase();
-    const { error } = await supabase
-        .from('system_config')
-        .upsert({
-            key: 'referral_reward',
-            value: amount,
-            updated_at: new Date().toISOString()
-        }, { onConflict: 'key' });
-
-    return !error;
+    return true;
 }
 
 /**
  * Atomic credit deduction via Supabase RPC.
- *
- * Calls a DB stored procedure that checks balance AND deducts in a single
- * transaction â€” eliminates the race condition where analysis succeeds but
- * deduction fails (or vice versa).
- *
- * Falls back to the non-atomic deductCredits() if the RPC is not available.
- *
- * SQL to create the RPC (run once in Supabase SQL Editor):
- *
- * CREATE OR REPLACE FUNCTION public.deduct_credits_atomic(
- *   p_user_id uuid,
- *   p_amount   integer,
- *   p_reason   text
- * )
- * RETURNS jsonb
- * LANGUAGE plpgsql
- * SECURITY DEFINER
- * AS $$
- * DECLARE
- *   v_tokens      integer;
- *   v_role        text;
- *   v_new_balance integer;
- *   v_exempt      boolean := false;
- *   v_exempt_roles text[] := ARRAY['admin','institution_admin','platform_admin','super_admin'];
- * BEGIN
- *   SELECT tokens, role INTO v_tokens, v_role
- *   FROM public.profiles
- *   WHERE id = p_user_id
- *   FOR UPDATE;                          -- row-level lock
- *
- *   IF NOT FOUND THEN
- *     RETURN jsonb_build_object('success', false, 'error', 'User not found');
- *   END IF;
- *
- *   v_exempt := v_role = ANY(v_exempt_roles);
- *
- *   IF v_exempt THEN
- *     RETURN jsonb_build_object('success', true, 'new_balance', v_tokens, 'exempt', true);
- *   END IF;
- *
- *   IF v_tokens < p_amount THEN
- *     RETURN jsonb_build_object('success', false, 'error', 'Insufficient credits',
- *                               'current_balance', v_tokens);
- *   END IF;
- *
- *   v_new_balance := v_tokens - p_amount;
- *
- *   UPDATE public.profiles
- *   SET tokens = v_new_balance,
- *       total_spent = COALESCE(total_spent, 0) + p_amount,
- *       updated_at = now()
- *   WHERE id = p_user_id;
- *
- *   INSERT INTO public.token_transactions(user_id, amount, type, description, balance_after)
- *   VALUES (p_user_id, -p_amount, 'spend_analysis', p_reason, v_new_balance);
- *
- *   RETURN jsonb_build_object('success', true, 'new_balance', v_new_balance, 'exempt', false);
- * END;
- * $$;
  */
 export async function deductCreditsAtomic(
     userId: string,
     amount: number,
     reason: string
 ): Promise<{ success: boolean; newBalance: number; isExempt?: boolean; error?: string }> {
-    if (amount === 0) {
-        // Free analysis â€” no deduction needed
-        return { success: true, newBalance: 0, isExempt: false };
-    }
-
-    const supabase = getSupabase();
-
-    const { data, error } = await supabase.rpc('deduct_credits_atomic', {
-        p_user_id: userId,
-        p_amount: amount,
-        p_reason: reason,
-    });
-
-    if (error) {
-        // RPC not available yet â€” fall back to non-atomic version
-        console.warn('[Credits] RPC deduct_credits_atomic not available, falling back:', error.message);
-        return deductCredits(userId, amount, reason);
-    }
-
-    const result = data as { success: boolean; new_balance?: number; exempt?: boolean; error?: string; current_balance?: number };
-
-    if (!result.success) {
-        return {
-            success: false,
-            newBalance: result.current_balance ?? 0,
-            error: result.error ?? 'Deduction failed',
-        };
-    }
-
-    return {
-        success: true,
-        newBalance: result.new_balance ?? 0,
-        isExempt: result.exempt ?? false,
-    };
+    // Atomic credit deduction disabled - always successful
+    return { success: true, newBalance: 999999, isExempt: true };
 }
-

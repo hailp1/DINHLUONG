@@ -53,6 +53,8 @@ export async function updateSession(request: NextRequest) {
     // We MUST let them through so the client-side Supabase can exchange the code for a session.
     const hasAuthCode = request.nextUrl.searchParams.has('code')
 
+    // Auth protection disabled - allowing free access for all users
+    /*
     if (!user && isProtectedRoute && !hasAuthCode) {
         logger.debug('[Middleware] Protected access denied:', pathname)
         const url = request.nextUrl.clone()
@@ -61,8 +63,10 @@ export async function updateSession(request: NextRequest) {
         url.searchParams.set('next', pathname)
         return NextResponse.redirect(url)
     }
+    */
 
-    // ROLE-BASED ACCESS CONTROL (RBAC) FOR ADMIN
+    // Role-based access control disabled
+    /*
     if (user && isAdminRoute) {
         // Fetch user role from profile
         const { data: profile } = await (supabase as any)
@@ -81,6 +85,7 @@ export async function updateSession(request: NextRequest) {
             return NextResponse.redirect(url)
         }
     }
+    */
 
     return response
 }

@@ -171,13 +171,8 @@ function HeaderContent({ centerContent, rightActions, hideNav = false, user: pro
 
                     <div className="h-6 w-px bg-slate-200 mx-1 hidden sm:block" />
 
-                    {user ? (
-                        <UserMenu user={user} profile={propProfile || authProfile} />
-                    ) : (
-                        <Link href="/login" className="hidden sm:block px-5 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-all shadow-sm">
-                            {t(locale, 'nav.login')}
-                        </Link>
-                    )}
+                    {/* Auth links removed for free access mode */}
+
 
                     {/* Mobile Menu Toggle */}
                     <button 
@@ -238,15 +233,7 @@ function HeaderContent({ centerContent, rightActions, hideNav = false, user: pro
                         </Link>
                     </div>
                     
-                    {!user && (
-                        <Link 
-                            href="/login" 
-                            className="flex items-center justify-center w-full p-4 rounded-xl bg-slate-900 text-white font-black uppercase text-xs tracking-widest mt-4"
-                            onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                            {t(locale, 'nav.login')}
-                        </Link>
-                    )}
+                    {/* Mobile login removed */}
                     
                     <div className="flex items-center justify-between pt-4">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Ngôn ngữ / Language</span>
