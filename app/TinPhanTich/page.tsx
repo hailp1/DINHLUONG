@@ -21,11 +21,11 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { FileUpload } from '@/components/FileUpload';
 import { DataProfiler } from '@/components/DataProfiler';
+import { AIAdvisor } from '@/components/analyze/AIAdvisor';
 import { profileData } from '@/lib/data-profiler';
 import { rApi } from '@/lib/r-api/client';
 import { useAuth } from '@/context/AuthContext';
 import { getStoredLocale, Locale } from '@/lib/i18n';
-import { Badge } from '@/components/ui/Badge';
 
 export default function TinPhanTichPage() {
     return (
@@ -40,7 +40,7 @@ export default function TinPhanTichPage() {
 function TinPhanTichContent() {
     const { user, profile: userProfile } = useAuth();
     const [locale, setLocale] = useState<Locale>('vi');
-    const [activeTab, setActiveTab] = useState<'upload' | 'descriptive' | 'reliability' | 'factor' | 'structural' | 'report'>('upload');
+    const [activeTab, setActiveTab] = useState<'upload' | 'advise' | 'descriptive' | 'reliability' | 'factor' | 'structural' | 'report'>('upload');
     const [data, setData] = useState<any[]>([]);
     const [filename, setFilename] = useState('');
     const [dataProfile, setDataProfile] = useState<any>(null);
@@ -63,8 +63,7 @@ function TinPhanTichContent() {
         setFilename(fname);
         const prof = profileData(loadedData);
         setDataProfile(prof);
-        setActiveTab('descriptive');
-        runInitialAnalysis(loadedData);
+        setActiveTab('advise'); // Go to AI advisor first
     };
 
     const numericColumns = useMemo(() => {
@@ -78,6 +77,7 @@ function TinPhanTichContent() {
         try {
             const freq = await rApi.descriptive(raw);
             setFreqResults(freq);
+            setActiveTab('descriptive');
         } catch (e) { console.error('[Descriptive Error]', e); }
     };
 
@@ -131,7 +131,7 @@ function TinPhanTichContent() {
                         <p className="text-xs text-slate-500 mt-1 uppercase tracking-widest font-bold">Scientific Analysis Module</p>
                     </div>
                     <div className="flex gap-2">
-                        {['upload', 'descriptive', 'reliability', 'factor', 'structural', 'report'].map((t, i) => (
+                        {['upload', 'advise', 'descriptive', 'reliability', 'factor', 'structural', 'report'].map((t, i) => (
                             <div key={t} className={`w-2 h-2 rounded-full ${activeTab === t ? 'bg-indigo-600' : 'bg-slate-200'}`}></div>
                         ))}
                     </div>
@@ -141,11 +141,12 @@ function TinPhanTichContent() {
                     {/* Navigation Buttons */}
                     <div className="lg:col-span-1 space-y-2">
                          <NavButton active={activeTab === 'upload'} onClick={() => setActiveTab('upload')} icon={Upload} label="1. Tải dữ liệu" />
-                         <NavButton active={activeTab === 'descriptive'} onClick={() => data.length > 0 && setActiveTab('descriptive')} disabled={data.length === 0} icon={Users} label="2. Mô tả mẫu" />
-                         <NavButton active={activeTab === 'reliability'} onClick={() => alphaResults.length > 0 && setActiveTab('reliability')} disabled={alphaResults.length === 0} icon={ShieldCheck} label="3. Cronbach Alpha" />
-                         <NavButton active={activeTab === 'factor'} onClick={() => efaResults && setActiveTab('factor')} disabled={!efaResults} icon={Dna} label="4. EFA / CFA" />
-                         <NavButton active={activeTab === 'structural'} onClick={() => plsResults && setActiveTab('structural')} disabled={!plsResults} icon={Network} label="5. PLS-SEM" />
-                         <NavButton active={activeTab === 'report'} onClick={() => plsResults && setActiveTab('report')} disabled={!plsResults} icon={FileText} label="6. Kết quả cuối" />
+                         <NavButton active={activeTab === 'advise'} onClick={() => dataProfile && setActiveTab('advise')} disabled={!dataProfile} icon={Lightbulb} label="2. AI Tư vấn" />
+                         <NavButton active={activeTab === 'descriptive'} onClick={() => data.length > 0 && setActiveTab('descriptive')} disabled={data.length === 0} icon={Users} label="3. Mô tả mẫu" />
+                         <NavButton active={activeTab === 'reliability'} onClick={() => alphaResults.length > 0 && setActiveTab('reliability')} disabled={alphaResults.length === 0} icon={ShieldCheck} label="4. Cronbach Alpha" />
+                         <NavButton active={activeTab === 'factor'} onClick={() => efaResults && setActiveTab('factor')} disabled={!efaResults} icon={Dna} label="5. EFA / CFA" />
+                         <NavButton active={activeTab === 'structural'} onClick={() => plsResults && setActiveTab('structural')} disabled={!plsResults} icon={Network} label="6. PLS-SEM" />
+                         <NavButton active={activeTab === 'report'} onClick={() => plsResults && setActiveTab('report')} disabled={!plsResults} icon={FileText} label="7. Kết quả cuối" />
                     </div>
 
                     {/* Result Content Area */}
@@ -154,6 +155,10 @@ function TinPhanTichContent() {
                             <div className="bg-white border border-slate-200 p-10 rounded-xl shadow-sm">
                                 <FileUpload onDataLoaded={handleDataLoaded} locale={locale} />
                             </div>
+                        )}
+
+                        {activeTab === 'advise' && dataProfile && (
+                            <AIAdvisor dataProfile={dataProfile} onStartAnalysis={() => runInitialAnalysis(data)} />
                         )}
 
                         {activeTab === 'descriptive' && (

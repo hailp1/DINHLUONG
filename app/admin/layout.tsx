@@ -9,44 +9,13 @@ import {
     ShieldCheck, Code, LayoutDashboard, BookOpen, Scale, Coins,
     FlaskConical, Menu, X, ChevronRight
 } from 'lucide-react'
-import { NCSLoader } from '@/components/ui/NCSLoader'
+import { Loader2 } from 'lucide-react'
 
 const NAV_SECTIONS = [
     {
-        title: 'Tổng quan',
+        title: 'Hệ thống',
         items: [
             { href: '/admin', icon: LayoutDashboard, label: 'Dashboard', exact: true },
-        ]
-    },
-    {
-        title: 'Quản lý người dùng',
-        items: [
-            { href: '/admin/users', icon: Users, label: 'Người dùng' },
-            { href: '/admin/roles', icon: ShieldCheck, label: 'Phân quyền (Roles)' },
-            { href: '/admin/tokens', icon: Coins, label: 'Tokens & Giao dịch' },
-            { href: '/admin/feedback', icon: MessageSquare, label: 'Phản hồi' },
-        ]
-    },
-    {
-        title: 'Nội dung & Dữ liệu',
-        items: [
-            { href: '/admin/knowledge', icon: BookOpen, label: 'Kiến thức (Knowledge)' },
-            { href: '/admin/scales', icon: Scale, label: 'Thang đo (Scales)' },
-        ]
-    },
-    {
-        title: 'Cấu hình hệ thống',
-        items: [
-            { href: '/admin/config', icon: Coins, label: 'Cấu hình giá / Credits' },
-            { href: '/admin/analysis-code', icon: Code, label: 'Cấu hình Code (R)' },
-            { href: '/admin/auto-test', icon: FlaskConical, label: 'Auto Test Engine' },
-        ]
-    },
-    {
-        title: 'Giám sát',
-        items: [
-            { href: '/admin/health', icon: Activity, label: 'Sức khỏe hệ thống' },
-            { href: '/admin/audit', icon: Shield, label: 'Nhật ký (Audit Log)' },
         ]
     }
 ]
@@ -102,7 +71,7 @@ export default function AdminLayout({
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <NCSLoader text="Đang xác thực quyền admin..." />
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
             </div>
         )
     }

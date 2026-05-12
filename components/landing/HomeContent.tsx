@@ -46,10 +46,10 @@ export default function HomeContent() {
                             Bắt đầu phân tích ngay <ArrowRight className="w-4 h-4" />
                         </Link>
                         <Link
-                            href="/docs/user-guide"
+                            href="/TinPhanTich"
                             className="w-full sm:w-auto px-10 py-4 bg-white border border-slate-200 text-slate-600 rounded font-bold uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
                         >
-                            Hướng dẫn sử dụng
+                            Xem Quy trình Nghiên cứu
                         </Link>
                     </div>
                 </div>
@@ -68,8 +68,8 @@ export default function HomeContent() {
                     />
                     <FeatureItem 
                         icon={Zap} 
-                        title="Xử lý Tức thì" 
-                        desc="Chạy mã R trực tiếp trong trình duyệt bằng WebR, đảm bảo bảo mật và tốc độ cao." 
+                        title="Real R Backend" 
+                        desc="Xử lý dữ liệu cực mạnh bằng engine R nguyên bản trên máy chủ, đảm bảo độ chính xác học thuật tuyệt đối." 
                     />
                 </div>
 
