@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/server"
 import Header from '@/components/layout/Header'
-import WebRPreloader from '@/components/WebRPreloader'
 import HomeContent from '@/components/landing/HomeContent'
 
 export default async function LandingPage() {
@@ -24,9 +23,6 @@ export default async function LandingPage() {
 
       <div className="relative z-10">
         <Header user={user} profile={profile} />
-
-        {/* Preload R libraries in background */}
-        <WebRPreloader />
 
         {/* Client-side content with i18n translations */}
         <HomeContent />

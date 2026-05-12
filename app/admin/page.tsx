@@ -230,7 +230,7 @@ export default function AdminPage() {
                         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-300 mb-4 opacity-80">Trạng thái máy chủ</h4>
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium text-slate-300">WebR Analysis</span>
+                                <span className="text-xs font-medium text-slate-300">Real R Engine</span>
                                 <span className="text-xs font-black text-emerald-400 flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> ONLINE
                                 </span>
