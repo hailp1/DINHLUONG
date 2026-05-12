@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react"
 import { ClientProviders } from "@/components/ClientProviders"
-import CacheVersionChecker from "@/components/CacheVersionChecker";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "vietnamese"] });
@@ -37,11 +36,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <ClientProviders>
           {children}
-          <CacheVersionChecker />
           <Analytics />
         </ClientProviders>
       </body>
     </html>
   );
 }
-
